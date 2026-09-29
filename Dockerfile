@@ -17,14 +17,14 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=8080
 
-# Copy dependency manifests and scripts
+# Copy dependency manifests
 COPY package*.json ./
+
+# Install production dependencies only
+RUN npm ci --only=production && npm cache clean --force
+
+# Copy patching script and patch endpoints
 COPY scripts/ scripts/
-
-# Install production dependencies only cleanly
-RUN npm ci --only=production --ignore-scripts && npm cache clean --force
-
-# Apply patches and ensure model is placed
 RUN node scripts/patch-mbbank.js
 RUN curl -sSL -o /tmp/model.onnx https://raw.githubusercontent.com/thedtvn/mbbank-capcha-ocr/master/mb_capcha_ocr/model.onnx && \
     cp /tmp/model.onnx /app/node_modules/mbbank/model.onnx || true && \
@@ -33,6 +33,9 @@ ENV MB_MODEL_PATH=/app/model.onnx
 
 # Copy source code
 COPY src/ src/
+
+# Ensure node user owns app directory and tmp
+RUN chown -R node:node /app /tmp
 
 # Create non-root user security policy
 USER node
