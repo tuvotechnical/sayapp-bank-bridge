@@ -34,9 +34,6 @@ ENV MB_MODEL_PATH=/app/model.onnx
 # Copy source code
 COPY src/ src/
 
-# Ensure node user owns app directory and tmp
-RUN chown -R node:node /app /tmp
-
 # Create non-root user security policy
 USER node
 
