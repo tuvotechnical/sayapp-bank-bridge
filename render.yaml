@@ -1,0 +1,48 @@
+# ==========================================
+# Render Standby Service Specification (100% Free Tier)
+# ==========================================
+# Acts as the secondary failover worker.
+# Uses Cloudflare D1 distributed lease lock to stay in standby mode
+# until Koyeb primary is offline or lease expires.
+# ==========================================
+
+services:
+  - type: web
+    name: sayapp-bank-bridge-standby
+    runtime: docker
+    dockerfilePath: Dockerfile
+    plan: free
+    region: singapore # Closest low-latency region to Vietnam
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: NODE_ENV
+        value: production
+      - key: WORKER_PROVIDER
+        value: render
+      - key: BRIDGE_SECRET_KEY
+        sync: false
+      - key: GATEWAY_WEBHOOK_URL
+        value: https://api.sayapp.top/api/v1/billing/webhook/bank-bridge
+      - key: GATEWAY_STATUS_URL
+        value: https://api.sayapp.top/api/v1/billing/bridge/status
+      - key: GATEWAY_LEASE_ACQUIRE_URL
+        value: https://api.sayapp.top/api/v1/billing/bridge/lease/acquire
+      - key: GATEWAY_LEASE_RELEASE_URL
+        value: https://api.sayapp.top/api/v1/billing/bridge/lease/release
+      - key: MB_USERNAME
+        sync: false
+      - key: MB_PASSWORD
+        sync: false
+      - key: MB_ACCOUNT_NUMBER
+        sync: false
+      - key: POLL_INTERVAL_ACTIVE_MS
+        value: 10000
+      - key: POLL_INTERVAL_IDLE_MS
+        value: 60000
+      - key: KEEP_ALIVE_INTERVAL_MS
+        value: 240000
+      - key: LEASE_TTL_SECONDS
+        value: 30
